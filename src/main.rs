@@ -11,7 +11,7 @@ pub use util::*;
 
 
 fn main() -> Result<()> {
-	let matches = App::new("My Super Program")
+	let matches = App::new("Local Hoster")
 		.version("1.0")
 		.author("Tim F. (https://github.com/Its-its/localhosting)")
 		.about("Makes it easy for you to reverse-proxy your hosts on Windows.")
