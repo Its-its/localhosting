@@ -1,5 +1,9 @@
 Simple to use command line program which allows you "Reverse Proxy" easily with built in windows tools.
 
+# Uses
+Useful if you're designing a website and want to easily be able to mimic a webserver locally.
+For instance. Instead of using "127.0.0.1:8080" to access the webpages you can use "example.com" or if you have a sub domain "other.example.com"
+
 
 # Commands
 
