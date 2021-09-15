@@ -10,6 +10,11 @@ mod util;
 pub use util::*;
 
 
+const ARG_NAME_ADDRESS: &str = "ADDRESS";
+const ARG_NAME_HOST: &str = "HOST";
+const ARG_NAME_ADDRESS_HOST: &str = "ADDRESS/HOST";
+
+
 fn main() -> Result<()> {
 	let matches = App::new("Local Hoster")
 		.version("1.0")
@@ -19,10 +24,10 @@ fn main() -> Result<()> {
 		.subcommand(
 			SubCommand::with_name("add")
 			.about("Add a new local listening host")
-			.arg(Arg::with_name("ADDRESS")
+			.arg(Arg::with_name(ARG_NAME_ADDRESS)
 				.help("Sets the listening address (127.0.0.1:8080)")
 				.required(true))
-			.arg(Arg::with_name("HOST")
+			.arg(Arg::with_name(ARG_NAME_HOST)
 				.help("Sets the listening host (example.com)")
 				.required(true))
 		)
@@ -30,7 +35,7 @@ fn main() -> Result<()> {
 		.subcommand(
 			SubCommand::with_name("remove")
 			.about("Remove listener based on Address OR Host")
-			.arg(Arg::with_name("ADDRESS/HOST").required(true))
+			.arg(Arg::with_name(ARG_NAME_ADDRESS_HOST).required(true))
 		)
 		// List
 		.subcommand(SubCommand::with_name("list").about("List host listeners"))
@@ -38,7 +43,7 @@ fn main() -> Result<()> {
 		.subcommand(
 			SubCommand::with_name("test")
 			.about("Test listener(s) based on Address OR Host")
-			.arg(Arg::with_name("ADDRESS/HOST").required(true))
+			.arg(Arg::with_name(ARG_NAME_ADDRESS_HOST).required(true))
 		)
 		.get_matches();
 
@@ -49,8 +54,8 @@ fn main() -> Result<()> {
 	match matches.subcommand() {
 		("add", Some(matches)) => {
 			if has_write_permissions()? {
-				let address = matches.value_of("ADDRESS").unwrap();
-				let host = matches.value_of("HOST").unwrap();
+				let address = matches.value_of(ARG_NAME_ADDRESS).unwrap();
+				let host = matches.value_of(ARG_NAME_HOST).unwrap();
 
 				command::add::process(address, host, netsh, hosts)?;
 			} else {
@@ -60,7 +65,7 @@ fn main() -> Result<()> {
 
 		("remove", Some(matches)) => {
 			if has_write_permissions()? {
-				let addr_or_host = matches.value_of("ADDRESS/HOST").unwrap();
+				let addr_or_host = matches.value_of(ARG_NAME_ADDRESS_HOST).unwrap();
 				command::remove::process(addr_or_host, netsh, hosts)?;
 			} else {
 				println!("Please run as Administrator.");
@@ -72,7 +77,7 @@ fn main() -> Result<()> {
 		}
 
 		("test", Some(matches)) => {
-			let addr_or_host = matches.value_of("ADDRESS/HOST").unwrap();
+			let addr_or_host = matches.value_of(ARG_NAME_ADDRESS_HOST).unwrap();
 			command::test::process(addr_or_host, netsh, hosts)?;
 		}
 
