@@ -1,5 +1,5 @@
 [package]
-name = "local-hosting"
+name = "localhosting"
 version = "0.1.0"
 edition = "2018"
 
@@ -10,7 +10,5 @@ clap = "2.33"
 anyhow = "1.0"
 rand = "0.8.4"
 
-
-# actix = "0.12"
 actix-web = "3.3.2"
 actix-service = "1.0.6"
