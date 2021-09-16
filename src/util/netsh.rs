@@ -56,6 +56,10 @@ impl NetSH {
 		self.bridges.iter().any(|v| v.connect_to == value || v.listen_to == value)
 	}
 
+	pub fn get_by_connection(&self, value: Connection) -> Option<&Bridge> {
+		self.bridges.iter().find(|v| v.connect_to == value || v.listen_to == value)
+	}
+
 	pub fn delete(&mut self, connect_to: Connection, proxy: ProxyBridge) -> Result<Option<Bridge>> {
 		if let Some(index) = self.bridges.iter().position(|v| v.listen_to == connect_to || v.connect_to == connect_to) {
 			let bridge = self.bridges.remove(index);
@@ -66,16 +70,6 @@ impl NetSH {
 		} else {
 			Ok(None)
 		}
-	}
-
-	pub fn get_by_connection(&self, value: Connection) -> Option<&Bridge> {
-		for bridge in &self.bridges {
-			if bridge.connect_to == value || bridge.listen_to == value {
-				return Some(bridge);
-			}
-		}
-
-		None
 	}
 
 	/// Returns The Bridge and bool specifying if it's new.

@@ -7,6 +7,8 @@ use anyhow::Result;
 
 pub const HOSTS_FILE_PATH: &str = "C:/Windows/System32/drivers/etc/hosts";
 
+const COMMENT_CHARACTER: char = '#';
+
 
 #[derive(Debug)]
 pub struct HostFile {
@@ -19,7 +21,7 @@ impl HostFile {
 
 		let items = value.lines()
 			// Remove Empty AND Commented Lines
-			.filter(|v| !v.is_empty() && !v.starts_with('#'))
+			.filter(|v| !v.is_empty() && !v.starts_with(COMMENT_CHARACTER))
 			// Parse Lines
 			.filter_map(parse_line)
 			.collect::<Result<_>>()?;
@@ -66,7 +68,6 @@ impl HostFile {
 	pub fn delete(&mut self, value: DeletionType) -> Result<Vec<HostItem>> {
 		let file = fs::read_to_string(HOSTS_FILE_PATH)?;
 
-
 		let filter = |line: &str| -> bool {
 			match value {
 				DeletionType::Address(v) => !line.contains(&v.to_string()),
@@ -74,18 +75,15 @@ impl HostFile {
 			}
 		};
 
-
 		let contents = file
 			.lines()
 			.filter(|v| filter(v))
 			.collect::<Vec<_>>();
 
-
 		fs::write(
 			HOSTS_FILE_PATH,
 			contents.join("\n")
 		)?;
-
 
 		let hosts = file
 			.lines()
@@ -95,7 +93,6 @@ impl HostFile {
 
 		Ok(hosts)
 	}
-
 }
 
 
@@ -124,6 +121,13 @@ fn parse_line(line: &str) -> Option<Result<HostItem>> {
 
 	let address = split.next()?.parse();
 	let host = split.next()?;
+
+	// Check if Host contains comment. If so, only grab text before it.
+	let host = if let Some(index) = host.find(COMMENT_CHARACTER) {
+		&host[0..index]
+	} else {
+		host
+	};
 
 	match address {
 		Ok(address) => Some(Ok(HostItem {
