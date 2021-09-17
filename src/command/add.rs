@@ -17,7 +17,7 @@ pub fn process(address_str: &str, host: &str, mut netsh: NetSH, mut hosts: HostF
 
 
 	// Add Host, Delete Bridge IF Error.
-	if let Err(e) = hosts.add(bridge.listen_to.address, host) {
+	if let Err(e) = hosts.add(bridge.listen_to.address, host.to_string()) {
 		netsh.delete(connect_to, ProxyBridge::V4ToV4)?;
 		return Err(e);
 	}

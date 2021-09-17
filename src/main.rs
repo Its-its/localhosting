@@ -15,6 +15,12 @@ const ARG_NAME_HOST: &str = "HOST";
 const ARG_NAME_ADDRESS_HOST: &str = "ADDRESS/HOST";
 
 
+const COMMAND_NAME_ADD: &str = "add";
+const COMMAND_NAME_REMOVE: &str = "remove";
+const COMMAND_NAME_LIST: &str = "list";
+const COMMAND_NAME_TEST: &str = "test";
+
+
 fn main() -> Result<()> {
 	let matches = App::new("Local Hoster")
 		.version("1.0")
@@ -22,7 +28,7 @@ fn main() -> Result<()> {
 		.about("Makes it easy for you to reverse-proxy your hosts on Windows.")
 		// Add
 		.subcommand(
-			SubCommand::with_name("add")
+			SubCommand::with_name(COMMAND_NAME_ADD)
 			.about("Add a new local listening host")
 			.arg(Arg::with_name(ARG_NAME_ADDRESS)
 				.help("Sets the listening address (127.0.0.1:8080)")
@@ -33,15 +39,15 @@ fn main() -> Result<()> {
 		)
 		// Remove
 		.subcommand(
-			SubCommand::with_name("remove")
+			SubCommand::with_name(COMMAND_NAME_REMOVE)
 			.about("Remove listener based on Address OR Host")
 			.arg(Arg::with_name(ARG_NAME_ADDRESS_HOST).required(true))
 		)
 		// List
-		.subcommand(SubCommand::with_name("list").about("List host listeners"))
+		.subcommand(SubCommand::with_name(COMMAND_NAME_LIST).about("List host listeners"))
 		// Test
 		.subcommand(
-			SubCommand::with_name("test")
+			SubCommand::with_name(COMMAND_NAME_TEST)
 			.about("Test listener(s) based on Address OR Host")
 			.arg(Arg::with_name(ARG_NAME_ADDRESS_HOST).required(true))
 		)
@@ -52,7 +58,7 @@ fn main() -> Result<()> {
 	let hosts = HostFile::new()?;
 
 	match matches.subcommand() {
-		("add", Some(matches)) => {
+		(COMMAND_NAME_ADD, Some(matches)) => {
 			if has_write_permissions()? {
 				let address = matches.value_of(ARG_NAME_ADDRESS).unwrap();
 				let host = matches.value_of(ARG_NAME_HOST).unwrap();
@@ -63,7 +69,7 @@ fn main() -> Result<()> {
 			}
 		}
 
-		("remove", Some(matches)) => {
+		(COMMAND_NAME_REMOVE, Some(matches)) => {
 			if has_write_permissions()? {
 				let addr_or_host = matches.value_of(ARG_NAME_ADDRESS_HOST).unwrap();
 				command::remove::process(addr_or_host, netsh, hosts)?;
@@ -72,11 +78,11 @@ fn main() -> Result<()> {
 			}
 		}
 
-		("list", _) => {
+		(COMMAND_NAME_LIST, _) => {
 			command::list::process(netsh, hosts)?;
 		}
 
-		("test", Some(matches)) => {
+		(COMMAND_NAME_TEST, Some(matches)) => {
 			let addr_or_host = matches.value_of(ARG_NAME_ADDRESS_HOST).unwrap();
 			command::test::process(addr_or_host, netsh, hosts)?;
 		}

@@ -43,12 +43,7 @@ impl HostFile {
 		self.items.iter().filter(|v| v.address == value).count()
 	}
 
-	pub fn add(&mut self, address: Ipv4Addr, host: &str) -> Result<()> {
-		self.items.push(HostItem {
-			address,
-			host: host.to_string()
-		});
-
+	pub fn add(&mut self, address: Ipv4Addr, host: String) -> Result<()> {
 		let contents = fs::read_to_string(HOSTS_FILE_PATH)?;
 
 		fs::write(
@@ -60,6 +55,11 @@ impl HostFile {
 				host
 			)
 		)?;
+
+		self.items.push(HostItem {
+			address,
+			host
+		});
 
 		Ok(())
 	}

@@ -78,7 +78,7 @@ impl NetSH {
 			Ok((c.clone(), false))
 		} else {
 			// Find unused listening address.
-			let listen_to: Connection = loop {
+			let listen_to = loop {
 				let oct = gen_octets();
 
 				// Since people normally use 127.0.0.* I don't want to infringe on it.
@@ -86,7 +86,7 @@ impl NetSH {
 					continue;
 				}
 
-				let conn: Connection = (Ipv4Addr::new(127, oct.0, oct.1, oct.2), 80).into();
+				let conn = Connection::from((Ipv4Addr::new(127, oct.0, oct.1, oct.2), 80));
 
 				if !self.contains(conn) {
 					break conn;
