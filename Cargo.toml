@@ -1,7 +1,7 @@
 [package]
 name = "localhosting"
 version = "0.2.0"
-edition = "2018"
+edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -12,3 +12,5 @@ rand = "0.8.4"
 
 actix-web = "3.3.2"
 actix-service = "1.0.6"
+
+faccess = "0.2.3"

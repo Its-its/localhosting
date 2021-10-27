@@ -59,7 +59,7 @@ fn main() -> Result<()> {
 
 	match matches.subcommand() {
 		(COMMAND_NAME_ADD, Some(matches)) => {
-			if has_write_permissions()? {
+			if has_write_permissions() {
 				let address = matches.value_of(ARG_NAME_ADDRESS).unwrap();
 				let host = matches.value_of(ARG_NAME_HOST).unwrap();
 
@@ -70,7 +70,7 @@ fn main() -> Result<()> {
 		}
 
 		(COMMAND_NAME_REMOVE, Some(matches)) => {
-			if has_write_permissions()? {
+			if has_write_permissions() {
 				let addr_or_host = matches.value_of(ARG_NAME_ADDRESS_HOST).unwrap();
 				command::remove::process(addr_or_host, netsh, hosts)?;
 			} else {

@@ -561,6 +561,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "faccess"
+version = "0.2.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e039175679baf763ddddf4f76900b92d4dae9411ee88cf42d2f11b976b09e07c"
+dependencies = [
+ "bitflags",
+ "libc",
+ "winapi 0.3.9",
+]
+
+[[package]]
 name = "flate2"
 version = "1.0.22"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -898,6 +909,7 @@ dependencies = [
  "actix-web",
  "anyhow",
  "clap",
+ "faccess",
  "rand 0.8.4",
 ]
 

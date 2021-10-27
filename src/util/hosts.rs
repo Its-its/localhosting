@@ -1,9 +1,8 @@
-use std::{
-	fs,
-	net::Ipv4Addr
-};
+use std::{fs, net::Ipv4Addr, path::Path};
 
+use faccess::{AccessMode, PathExt};
 use anyhow::Result;
+
 
 pub const HOSTS_FILE_PATH: &str = "C:/Windows/System32/drivers/etc/hosts";
 
@@ -109,10 +108,8 @@ pub struct HostItem {
 }
 
 
-// TODO: Better way to check if has write permissions? Check if ran as Administrator somehow?
-pub fn has_write_permissions() -> Result<bool> {
-	let contents = fs::read_to_string(HOSTS_FILE_PATH)?;
-	Ok(fs::write(HOSTS_FILE_PATH, contents).is_ok())
+pub fn has_write_permissions() -> bool {
+	Path::new(HOSTS_FILE_PATH).access(AccessMode::WRITE).is_ok()
 }
 
 
