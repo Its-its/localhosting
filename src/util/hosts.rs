@@ -11,7 +11,9 @@ const COMMENT_CHARACTER: char = '#';
 
 #[derive(Debug, Default)]
 pub struct HostFile {
-	items: Vec<HostItem>
+	/// Check to see if we should use the windows host file. Used for tests.
+	pub uses_host_file: bool,
+	pub items: Vec<HostItem> // TODO: Store line pos for better removal?
 }
 
 impl HostFile {
@@ -26,6 +28,7 @@ impl HostFile {
 			.collect::<Result<_>>()?;
 
 		Ok(HostFile {
+			uses_host_file: true,
 			items
 		})
 	}
@@ -43,17 +46,19 @@ impl HostFile {
 	}
 
 	pub fn add(&mut self, address: Ipv4Addr, host: String) -> Result<()> {
-		let contents = fs::read_to_string(HOSTS_FILE_PATH)?;
+		if self.uses_host_file {
+			let contents = fs::read_to_string(HOSTS_FILE_PATH)?;
 
-		fs::write(
-			HOSTS_FILE_PATH,
-			format!(
-				"{}\n{} {} # Do NOT Remove. Added Automatically (https://github.com/Its-its/localhosting)",
-				contents,
-				address,
-				host
-			)
-		)?;
+			fs::write(
+				HOSTS_FILE_PATH,
+				format!(
+					"{}\n{} {} # Do NOT Remove. Added Automatically (https://github.com/Its-its/localhosting)",
+					contents,
+					address,
+					host
+				)
+			)?;
+		}
 
 		self.items.push(HostItem {
 			address,
@@ -63,34 +68,46 @@ impl HostFile {
 		Ok(())
 	}
 
-
 	pub fn delete(&mut self, value: DeletionType) -> Result<Vec<HostItem>> {
-		let file = fs::read_to_string(HOSTS_FILE_PATH)?;
+		if self.uses_host_file {
+			let file = fs::read_to_string(HOSTS_FILE_PATH)?;
 
-		let filter = |line: &str| -> bool {
-			match value {
-				DeletionType::Address(v) => !line.contains(&v.to_string()),
-				DeletionType::Host(v) => !line.contains(v)
-			}
-		};
+			let filter = |line: &str| -> bool {
+				match value {
+					DeletionType::Address(v) => !line.contains(&v.to_string()),
+					DeletionType::Host(v) => !line.contains(v)
+				}
+			};
 
-		let contents = file
-			.lines()
-			.filter(|v| filter(v))
+			let contents = file
+				.lines()
+				.filter(|v| filter(v))
+				.collect::<Vec<_>>();
+
+			fs::write(
+				HOSTS_FILE_PATH,
+				contents.join("\n")
+			)?;
+		}
+
+		// Find items which need to be deleted.
+		let deleting = self.items.iter()
+			.enumerate()
+			.filter(|(_, item)| match &value {
+				DeletionType::Address(v) => &item.address == v,
+				DeletionType::Host(v) => item.host.contains(v)
+			})
+			.map(|(i, _)| i)
+			.rev()
 			.collect::<Vec<_>>();
 
-		fs::write(
-			HOSTS_FILE_PATH,
-			contents.join("\n")
-		)?;
+		let mut deleted_hosts = Vec::new();
 
-		let hosts = file
-			.lines()
-			.filter(|v| !filter(v))
-			.filter_map(parse_line)
-			.collect::<Result<Vec<_>>>()?;
+		for index in deleting {
+			deleted_hosts.push(self.items.remove(index));
+		}
 
-		Ok(hosts)
+		Ok(deleted_hosts)
 	}
 }
 
