@@ -12,26 +12,54 @@ use actix_web::{
 };
 
 
-const HOST_URL: &str = "example.com";
-const HOST_URL_2: &str = "this.example.com";
-
 #[actix_web::main]
 pub async fn main() -> std::io::Result<()> {
+	let mut args = std::env::args().skip(1);
+
+	let port = args.next().unwrap_or_else(|| panic!("Expected a port to run the website on.\nPlease Use the following command: localhosting.exe 8080 example.com this.example.com"));
+	let addr = format!("127.0.0.1:{}", port);
+
+	let websites = args.collect::<Vec<_>>();
+
+	if websites.is_empty() {
+		panic!("Expected website urls.\nPlease Use the following command: localhosting.exe <port> example.com this.example.com")
+	}
+
+	for website_name in &websites {
+		println!("Registering Website URL: {}", website_name);
+	}
+
+
 	HttpServer::new(move || {
-		App::new()
+		let mut app = App::new();
 
-		// Host
-		.service(
+		for website_name in websites.clone() {
+			app = app.service(
+				web::scope("")
+				.guard(guard::fn_guard(
+					move |req| {
+						(|| -> Option<bool> {
+							Some(req.headers().get(header::HOST)? == &website_name)
+						})()
+						.unwrap_or_default()
+					}
+				))
+				.route("*", web::get().to(|req: HttpRequest| {
+					let host = req.headers()
+						.get(header::HOST)
+						.unwrap()
+						.to_str()
+						.unwrap();
+
+					println!("Loaded {}", host);
+
+					HttpResponse::Ok().body(format!("Viewing Host {:?}", host))
+				}))
+			);
+		}
+
+		app.service(
 			web::scope("")
-			.guard(guard::fn_guard(
-				move |req| {
-					(|| -> Option<bool> {
-						let host = req.headers().get(header::HOST)?;
-						Some(host == HOST_URL)
-					})()
-					.unwrap_or_default()
-				}
-			))
 			.route("*", web::get().to(|req: HttpRequest| {
 				let host = req.headers()
 					.get(header::HOST)
@@ -41,36 +69,12 @@ pub async fn main() -> std::io::Result<()> {
 
 				println!("Loaded {}", host);
 
-				HttpResponse::Ok().body(format!("Viewing Host {:?}", host))
-			}))
-		)
-
-		// Host 2
-		.service(
-			web::scope("")
-			.guard(guard::fn_guard(
-				move |req| {
-					(|| -> Option<bool> {
-						let host = req.headers().get(header::HOST)?;
-						Some(host == HOST_URL_2)
-					})()
-					.unwrap_or_default()
-				}
-			))
-			.route("*", web::get().to(|req: HttpRequest| {
-				let host = req.headers()
-					.get(header::HOST)
-					.unwrap()
-					.to_str()
-					.unwrap();
-
-				println!("Loaded {}", host);
-
-				HttpResponse::Ok().body(format!("Viewing Host {:?}", host))
+				HttpResponse::Ok().body(format!("Viewing Default Host {:?}", host))
 			}))
 		)
 	})
-	.bind("127.0.0.1:8080")?
+	.workers(1)
+	.bind(addr)?
 	.run()
 	.await?;
 

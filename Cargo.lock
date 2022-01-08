@@ -561,6 +561,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "example-website"
+version = "0.1.0"
+dependencies = [
+ "actix-web",
+]
+
+[[package]]
 name = "faccess"
 version = "0.2.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"

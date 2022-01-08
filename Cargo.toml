@@ -1,3 +1,8 @@
+[workspace]
+members = [
+	"example/actix"
+]
+
 [package]
 name = "localhosting"
 version = "0.2.1"
