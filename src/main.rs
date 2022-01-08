@@ -55,7 +55,7 @@ fn main() -> Result<()> {
 
 
 	let netsh = NetSH::new(ProxyBridge::V4ToV4)?;
-	let hosts = HostFile::new()?;
+	let hosts = HostFile::read()?;
 
 	match matches.subcommand() {
 		(COMMAND_NAME_ADD, Some(matches)) => {

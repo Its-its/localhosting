@@ -9,13 +9,13 @@ pub const HOSTS_FILE_PATH: &str = "C:/Windows/System32/drivers/etc/hosts";
 const COMMENT_CHARACTER: char = '#';
 
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct HostFile {
 	items: Vec<HostItem>
 }
 
 impl HostFile {
-	pub fn new() -> Result<Self> {
+	pub fn read() -> Result<Self> {
 		let value = fs::read_to_string(HOSTS_FILE_PATH)?;
 
 		let items = value.lines()
