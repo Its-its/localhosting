@@ -4,7 +4,7 @@ use anyhow::Result;
 
 use crate::{Bridge, Connection, HostFile, HostItem, NetSH};
 
-pub fn process(addr_or_host: &str, netsh: NetSH, hosts: HostFile) -> Result<()> {
+pub fn process(addr_or_host: &str, netsh: &NetSH, hosts: &HostFile) -> Result<()> {
 	println!("Starting HTTP Server");
 
 	// Manage Command "file.exe test 127.0.0.1:8080"

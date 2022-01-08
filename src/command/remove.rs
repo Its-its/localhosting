@@ -3,7 +3,7 @@ use anyhow::Result;
 use crate::{DeletionType, HostFile, Connection, NetSH, ProxyBridge};
 
 
-pub fn process(addr_or_host: &str, mut netsh: NetSH, mut hosts: HostFile) -> Result<()> {
+pub fn process(addr_or_host: &str, netsh: &mut NetSH, hosts: &mut HostFile) -> Result<()> {
 	// Manage Command "file.exe remove 127.0.0.1:8080"
 	if addr_or_host.contains(':') {
 		let connect_to = addr_or_host.parse::<Connection>()?;

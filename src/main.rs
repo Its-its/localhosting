@@ -54,8 +54,8 @@ fn main() -> Result<()> {
 		.get_matches();
 
 
-	let netsh = NetSH::create(ProxyBridge::V4ToV4)?;
-	let hosts = HostFile::read()?;
+	let mut netsh = NetSH::create(ProxyBridge::V4ToV4)?;
+	let mut hosts = HostFile::read()?;
 
 	match matches.subcommand() {
 		(COMMAND_NAME_ADD, Some(matches)) => {
@@ -63,7 +63,7 @@ fn main() -> Result<()> {
 				let address = matches.value_of(ARG_NAME_ADDRESS).unwrap();
 				let host = matches.value_of(ARG_NAME_HOST).unwrap();
 
-				command::add::process(address, host, netsh, hosts)?;
+				command::add::process(address, host, &mut netsh, &mut hosts)?;
 			} else {
 				println!("Please run as Administrator.");
 			}
@@ -72,19 +72,19 @@ fn main() -> Result<()> {
 		(COMMAND_NAME_REMOVE, Some(matches)) => {
 			if has_write_permissions() {
 				let addr_or_host = matches.value_of(ARG_NAME_ADDRESS_HOST).unwrap();
-				command::remove::process(addr_or_host, netsh, hosts)?;
+				command::remove::process(addr_or_host, &mut netsh, &mut hosts)?;
 			} else {
 				println!("Please run as Administrator.");
 			}
 		}
 
 		(COMMAND_NAME_LIST, _) => {
-			command::list::process(netsh, hosts)?;
+			command::list::process(&netsh, &hosts)?;
 		}
 
 		(COMMAND_NAME_TEST, Some(matches)) => {
 			let addr_or_host = matches.value_of(ARG_NAME_ADDRESS_HOST).unwrap();
-			command::test::process(addr_or_host, netsh, hosts)?;
+			command::test::process(addr_or_host, &netsh, &hosts)?;
 		}
 
 		_ => ()

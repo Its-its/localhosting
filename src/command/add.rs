@@ -4,7 +4,7 @@ use crate::{HostFile, Connection, NetSH, ProxyBridge};
 
 
 
-pub fn process(address_str: &str, host: &str, mut netsh: NetSH, mut hosts: HostFile) -> Result<()> {
+pub fn process(address_str: &str, host: &str, netsh: &mut NetSH, hosts: &mut HostFile) -> Result<()> {
 	let connect_to: Connection = address_str.parse()?;
 
 	let (bridge, is_new) = netsh.add_or_retreive(connect_to, ProxyBridge::V4ToV4)?;

@@ -3,8 +3,8 @@ use anyhow::Result;
 use crate::{HostFile, NetSH};
 
 
-pub fn process(netsh: NetSH, hosts: HostFile) -> Result<()> {
-	for bridge in netsh.bridges {
+pub fn process(netsh: &NetSH, hosts: &HostFile) -> Result<()> {
+	for bridge in &netsh.bridges {
 		let found = hosts.find_by_address(bridge.listen_to.address);
 
 		if !found.is_empty() {
