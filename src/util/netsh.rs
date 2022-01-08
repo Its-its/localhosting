@@ -8,12 +8,15 @@ use anyhow::Result;
 use crate::Connection;
 
 
+#[derive(Default)]
 pub struct NetSH {
+	/// Check to see if we should call the "netsh" program or not. Used for tests.
+	pub call_to_program: bool,
 	pub bridges: Vec<Bridge>
 }
 
 impl NetSH {
-	pub fn new(proxy: ProxyBridge) -> Result<Self> {
+	pub fn create(proxy: ProxyBridge) -> Result<Self> {
 		let output = Command::new("netsh")
 			.args(&["interface", "portproxy", "show", proxy.into_str()])
 			.output()?;
@@ -48,6 +51,7 @@ impl NetSH {
 			.collect::<Vec<_>>();
 
 		Ok(Self {
+			call_to_program: true,
 			bridges
 		})
 	}
@@ -64,7 +68,11 @@ impl NetSH {
 		if let Some(index) = self.bridges.iter().position(|v| v.listen_to == connect_to || v.connect_to == connect_to) {
 			let bridge = self.bridges.remove(index);
 
-			bridge.delete(proxy)?;
+			if self.call_to_program {
+				bridge.delete(proxy)?;
+			} else {
+				println!("[netsh][test]: Deleting bridge {}.", bridge.listen_to);
+			}
 
 			Ok(Some(bridge))
 		} else {
@@ -98,22 +106,26 @@ impl NetSH {
 				panic!("Bridge already exists for {}.", connect_to);
 			}
 
-			// netsh interface portproxy add v4tov4 listenport=80 listenaddress=127.*.*.* connectport=**** connectaddress=127.0.0.1
-			let output = Command::new("netsh")
-				.args(&[
-					"interface",
-					"portproxy",
-					"add",
-					proxy.into_str(),
-					&format!("listenaddress={}", listen_to.address),
-					&format!("listenport={}", listen_to.port),
-					&format!("connectaddress={}", connect_to.address),
-					&format!("connectport={}", connect_to.port),
-				])
-				.output()?;
+			if self.call_to_program {
+				// netsh interface portproxy add v4tov4 listenport=80 listenaddress=127.*.*.* connectport=**** connectaddress=127.0.0.1
+				let output = Command::new("netsh")
+					.args(&[
+						"interface",
+						"portproxy",
+						"add",
+						proxy.into_str(),
+						&format!("listenaddress={}", listen_to.address),
+						&format!("listenport={}", listen_to.port),
+						&format!("connectaddress={}", connect_to.address),
+						&format!("connectport={}", connect_to.port),
+					])
+					.output()?;
 
-			if !output.status.success() {
-				panic!("[netsh][ADD]: {}", output.status);
+				if !output.status.success() {
+					panic!("[netsh][ADD]: {}", output.status);
+				}
+			} else {
+				println!("[netsh][test]: Adding portproxy to self.");
 			}
 
 			self.bridges.push(Bridge {
