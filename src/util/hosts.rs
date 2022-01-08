@@ -95,7 +95,7 @@ impl HostFile {
 			.enumerate()
 			.filter(|(_, item)| match &value {
 				DeletionType::Address(v) => &item.address == v,
-				DeletionType::Host(v) => item.host.contains(v)
+				DeletionType::Host(v) => &item.host == v
 			})
 			.map(|(i, _)| i)
 			.rev()
