@@ -23,9 +23,9 @@ pub fn process(address_str: &str, host: &str, mut netsh: NetSH, mut hosts: HostF
 	}
 
 	if is_new {
-		println!("Added {} to existing Bridge for {:?}.", connect_to, host);
-	} else {
 		println!("Added {} to new Bridge for {:?}.", connect_to, host);
+	} else {
+		println!("Added {} to existing Bridge for {:?}.", connect_to, host);
 	}
 
 	Ok(())
