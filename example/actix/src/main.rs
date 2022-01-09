@@ -1,5 +1,7 @@
-// Untested. Copied from the src/command/test.rs file.
+// Copied from the src/command/test.rs file.
 // Used just to show what specificially the program is used for.
+// You can add website URLS to your 'cargo run' command to register specific domains.
+// Otherwise it will use example.com, sub.example.com, other.example.com
 
 use actix_web::{
 	App,
@@ -14,21 +16,23 @@ use actix_web::{
 
 #[actix_web::main]
 pub async fn main() -> std::io::Result<()> {
-	let mut args = std::env::args().skip(1);
+	let args = std::env::args().skip(1);
 
-	let port = args.next().unwrap_or_else(|| panic!("Expected a port to run the website on.\nPlease Use the following command: localhosting.exe 8080 example.com this.example.com"));
-	let addr = format!("127.0.0.1:{}", port);
+	let addr = "127.0.0.1:8080";
 
-	let websites = args.collect::<Vec<_>>();
+	let mut websites = args.collect::<Vec<_>>();
 
 	if websites.is_empty() {
-		panic!("Expected website urls.\nPlease Use the following command: localhosting.exe <port> example.com this.example.com")
+		websites.push(String::from("example.com"));
+		websites.push(String::from("sub.example.com"));
+		websites.push(String::from("other.example.com"));
 	}
 
 	for website_name in &websites {
 		println!("Registering Website URL: {}", website_name);
 	}
 
+	println!("Original address available to connect to also: {}", addr);
 
 	HttpServer::new(move || {
 		let mut app = App::new();
