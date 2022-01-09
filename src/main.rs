@@ -92,3 +92,85 @@ fn main() -> Result<()> {
 
 	Ok(())
 }
+
+
+#[cfg(test)]
+mod tests {
+	use crate::{NetSH, HostFile, command, Connection};
+
+	const ADDRESS_HOST_COMBOS: [(&str, &str); 6] = [
+		("127.0.0.1:8080", "one.test"),
+		("127.0.0.1:8080", "a.one.test"),
+		("127.0.0.1:8080", "b.one.test"),
+
+		("127.0.0.1:8081", "two.test"),
+		("127.0.0.1:8081", "a.two.test"),
+
+		("127.0.0.1:8082", "three.test")
+	];
+
+	#[test]
+	fn add_successes() {
+		let (mut netsh, mut hosts) = (NetSH::default(), HostFile::default());
+
+		for (addr, host) in ADDRESS_HOST_COMBOS {
+			command::add::process(addr, host, &mut netsh, &mut hosts).unwrap();
+		}
+
+		// Attempt to add a duplicate (Should not add anything)
+		command::add::process(ADDRESS_HOST_COMBOS.last().unwrap().0, ADDRESS_HOST_COMBOS.last().unwrap().1, &mut netsh, &mut hosts).unwrap();
+
+		// Compare bridge listeners against ones which were attempted to add. (each iter for counts will be [3, 2, 1])
+		for bridge in &netsh.bridges {
+			let combo_count = ADDRESS_HOST_COMBOS.iter().filter(|(v, _)| bridge.connect_to == v.parse::<Connection>().unwrap()).count();
+
+			let registered_count = hosts.count_addresses(bridge.listen_to.address);
+
+			assert_eq!(combo_count, registered_count, "Unique Bridge Listeners");
+		}
+
+		assert_eq!(3, netsh.bridges.len(), "Bridges Count (Unique addresses)");
+		assert_eq!(6, hosts.items.len(), "Hosts Length (Unique Connections in Hosts File)");
+	}
+
+	#[test]
+	fn remove_successes() {
+		let (mut netsh, mut hosts) = (NetSH::default(), HostFile::default());
+
+		for (addr, host) in ADDRESS_HOST_COMBOS {
+			command::add::process(addr, host, &mut netsh, &mut hosts).unwrap();
+		}
+
+		// Start off with initial state. Should be correct.
+		assert_eq!(3, netsh.bridges.len(), "[Initial] Bridges Count (Unique addresses)");
+		assert_eq!(6, hosts.items.len(), "[Initial] Hosts Length (Unique Connections in Hosts File)");
+
+		// Remove single host only
+		command::remove::process("a.one.test", &mut netsh, &mut hosts).unwrap();
+
+		assert_eq!(3, netsh.bridges.len(), "[1 Host Removal] Bridges Count (Unique addresses)");
+		assert_eq!(5, hosts.items.len(), "[1 Host Removal] Hosts Length (Unique Connections in Hosts File)");
+
+		// Remove single host only
+		command::remove::process("two.test", &mut netsh, &mut hosts).unwrap();
+
+		assert_eq!(3, netsh.bridges.len(), "[2 Hosts Removal] Bridges Count (Unique addresses)");
+		assert_eq!(4, hosts.items.len(), "[2 Hosts Removal] Hosts Length (Unique Connections in Hosts File)");
+
+		// Remove multiple hosts and bridge
+		command::remove::process("127.0.0.1:8080", &mut netsh, &mut hosts).unwrap();
+
+		assert_eq!(2, netsh.bridges.len(), "[2 Hosts + Bridge Removal] Bridges Count (Unique addresses)");
+		assert_eq!(2, hosts.items.len(), "[2 Hosts + Bridge Removal] Hosts Length (Unique Connections in Hosts File)");
+	}
+
+	#[test]
+	fn add_failures() {
+		//
+	}
+
+	#[test]
+	fn remove_failures() {
+		//
+	}
+}
